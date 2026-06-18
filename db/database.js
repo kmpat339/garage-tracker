@@ -77,6 +77,34 @@ function createDatabase() {
     }
   };
 
+  // Summary: total spend + number of services for EACH vehicle.
+  // Unlike find() (which returns whole rows as-is), aggregate() runs the docs
+  // through a pipeline of stages that can GROUP rows and do MATH across them,
+  // producing brand-new summary rows that don't exist in the collection.
+  me.getSummaryByVehicle = async function () {
+    const { client, services } = await getClient();
+    try {
+      const pipeline = [
+        // $group: make one bucket per vehicleId, then for each bucket compute:
+        //   - totalSpent: add up every service's cost   ($sum of the cost field)
+        //   - serviceCount: add 1 per service           ($sum: 1 = count the rows)
+        // Note: _id here is the GROUP KEY (the vehicleId), not a document id.
+        {
+          $group: {
+            _id: "$vehicleId",
+            totalSpent: { $sum: "$cost" },
+            serviceCount: { $sum: 1 },
+          },
+        },
+        // $sort: biggest spender first (-1 = descending).
+        { $sort: { totalSpent: -1 } },
+      ];
+      return await services.aggregate(pipeline).toArray();
+    } finally {
+      await client.close();
+    }
+  };
+
   // Delete the service with this _id. Returns the result so the route can
   // check deletedCount (0 = no document had that id).
   me.deleteService = async function (objectId) {

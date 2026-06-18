@@ -147,6 +147,34 @@ router.post("/", async (req, res) => {
 });
 
 /*=============================================
+=            Summary / Aggregation routes          =
+=============================================*/
+
+// IMPORTANT: these literal routes MUST be registered ABOVE "/:id" below.
+// Express matches routes top-to-bottom by shape; "/:id" matches ANY single
+// segment, so if it came first it would swallow "summary" and these would
+// never run.
+
+// GET /api/services/summary/by-vehicle
+// Returns one row per vehicle: total spend + number of services.
+// Takes no input (no body, no params), so this is the simplest handler here:
+// just call the db method and send back the result.
+router.get("/summary/by-vehicle", async (req, res) => {
+  try {
+    const summary = await db.getSummaryByVehicle();
+    console.log(
+      "GET /api/services/summary/by-vehicle:",
+      summary.length,
+      "vehicles",
+    );
+    res.json(summary);
+  } catch (error) {
+    console.error("GET /api/services/summary/by-vehicle failed:", error.message);
+    res.status(500).json({ error: "Failed to build summary" });
+  }
+});
+
+/*=============================================
 =            GET/PUT/DELETE Single Records          =
 =============================================*/
 
