@@ -1,6 +1,34 @@
 # garage-tracker
 Garage-tracker is a full-stack web application for tracking vehicle maintenance.
 
+## API (Services)
+
+All endpoints are mounted under `/api/services` and return JSON.
+
+**Records**
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/services` | List all service records. |
+| `POST` | `/api/services` | Create a service record. |
+| `GET` | `/api/services/:id` | Get one record by id. |
+| `PUT` | `/api/services/:id` | Replace a record by id. |
+| `DELETE` | `/api/services/:id` | Delete a record by id. |
+
+**Filters** (query params on `GET /api/services`, combinable)
+
+- `?vehicleId=<id>` — only that vehicle's services
+- `?serviceType=<type>` — only that service type
+- `?from=YYYY-MM-DD&to=YYYY-MM-DD` — only services in that date range (either end optional)
+
+**Reports** (computed views, grouped under `summary/`)
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/services/summary/by-vehicle` | Total spend and service count per vehicle. |
+| `GET` | `/api/services/summary/monthly` | Total spend and service count per month. |
+| `GET` | `/api/services/summary/due-soon` | Each vehicle's predicted next service by mileage (`milesLeft`, negative = overdue), most urgent first. |
+
 ## Use of AI (Data Generation)
 
 The seed data for the two collections was created in two steps:
