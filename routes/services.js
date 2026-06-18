@@ -145,7 +145,12 @@ function validateService(doc) {
     return "Service rating must be a whole number between 1 and 5";
   }
 
-  // notes is optional — no check.
+  // notes is optional EXCEPT when the service type is "other": then we require
+  // a note so there's a record of what the service actually was.
+  if (doc.serviceType === "other" && !doc.notes?.trim()) {
+    return "Notes are required when the service type is other";
+  }
+
   return null;
 }
 
