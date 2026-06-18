@@ -6,3 +6,22 @@ body {
 h2 {
   text-align: center;
 }
+
+/* Service list: cap the height so rows scroll up/down inside the box instead
+   of making the page very long. (overflow-x already comes from
+   .table-responsive for the sideways scroll on narrow screens.) */
+.services-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Keep the column headers visible while the rows scroll. position: sticky pins
+   the header row to the top of the scroll box. z-index keeps it above the rows
+   so they don't show through; the border is drawn on the th itself (table
+   borders otherwise scroll away with the rows, leaving a broken line). */
+.services-scroll thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* solid/opaque so scrolling rows don't bleed through */
+  border-bottom: 2px solid #dee2e6; /* Bootstrap's table border color */
+}

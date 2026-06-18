@@ -107,10 +107,10 @@
               </div>
             </form>
 
-            <!-- Rows go in <tbody> via JS later. table-responsive wraps the
-                 table so it scrolls sideways instead of overflowing its column
-                 on narrow screens. -->
-            <div class="table-responsive">
+            <!-- Rows go in <tbody> via JS later. table-responsive scrolls
+                 sideways on narrow screens; our services-scroll class also caps
+                 the height so the rows scroll up/down (header stays pinned). -->
+            <div class="table-responsive services-scroll">
               <table class="table table-striped">
                 <thead>
                   <tr>

@@ -17,7 +17,9 @@ async function MyFrontEnd() {
       console.error("Error fetching services:", res.statusText);
       return [];
     }
-    return await res.json();
+    const services = await res.json();
+    console.log("Fetched services:", services);
+    return services;
   }
 
   // GET the vehicles (used to translate vehicleId -> nickname).
@@ -27,7 +29,9 @@ async function MyFrontEnd() {
       console.error("Error fetching vehicles:", res.statusText);
       return [];
     }
-    return await res.json();
+    const vehicles = await res.json();
+    console.log("Fetched vehicles:", vehicles);
+    return vehicles;
   }
 
   // --- helpers ------------------------------------------------------------
@@ -39,6 +43,7 @@ async function MyFrontEnd() {
     for (let v of vehicles) {
       map.set(v._id, v.nickname);
     }
+    console.log("Built vehicle name map with", map.size, "entries");
     return map;
   }
 
@@ -61,6 +66,7 @@ async function MyFrontEnd() {
       option.value = v.nickname;
       datalist.appendChild(option);
     }
+    console.log("Filled vehicle datalist with", vehicles.length, "options");
   }
 
   // --- rendering ----------------------------------------------------------
@@ -106,10 +112,10 @@ async function MyFrontEnd() {
       // Add the row to the table.
       tbody.appendChild(row);
     }
+    console.log("Displayed services with", services.length, "entries");
   }
 
   // --- run ----------------------------------------------------------------
-
 
   // Re-fetch just the services and redraw the table. Call this again whenever
   // the data changes (after add/edit/delete later) to refresh the list.
@@ -117,6 +123,7 @@ async function MyFrontEnd() {
     const services = await fetchServices();
     console.log("Loaded", services.length, "services");
     displayServices(services, nameById);
+    console.log("Refreshed services display");
   }
 
   // Initial load: get vehicles once, set up the datalist + name map, then
