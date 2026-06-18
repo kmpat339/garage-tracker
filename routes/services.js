@@ -69,6 +69,30 @@ function buildServiceFromBody(body) {
   };
 }
 
+// Validate a built service document. Returns an error message string if it's
+// invalid, or null if it's fine. Shared by POST and PUT so the rules live in
+// one place. (`doc` is the object from buildServiceFromBody.)
+function validateService(doc) {
+  // The minimum a recommendedInterval is allowed to be. Real-world service
+  // intervals are thousands of miles; our seed data ranges 3000–10000, so we
+  // reject anything below this as a data-entry mistake (0 used to slip in).
+  const MIN_RECOMMENDED_INTERVAL = 3000;
+
+  // vehicleId is null when it was missing OR not a valid ObjectId.
+  if (!doc.vehicleId) {
+    return "A valid vehicleId is required";
+  }
+  // recommendedInterval may be null (not provided) — that's allowed — but if a
+  // value WAS given, it must be a sensible positive interval.
+  if (
+    doc.recommendedInterval !== null &&
+    doc.recommendedInterval < MIN_RECOMMENDED_INTERVAL
+  ) {
+    return `recommendedInterval must be at least ${MIN_RECOMMENDED_INTERVAL}`;
+  }
+  return null;
+}
+
 // Build a MongoDB filter object from the query string. Starts empty (= match
 // everything) and adds a condition only for each filter actually provided.
 // This is request-parsing, so it lives in the route; db.getServices() just
@@ -138,10 +162,10 @@ router.post("/", async (req, res) => {
     // Build the document from the request body (shared with PUT).
     const newService = buildServiceFromBody(req.body);
 
-    // A minimal sanity check: don't insert a record without a valid vehicle.
-    // newService.vehicleId is null when it was missing OR not a valid id.
-    if (!newService.vehicleId) {
-      return res.status(400).json({ error: "A valid vehicleId is required" });
+    // Validate (vehicleId + interval). Returns an error string, or null if ok.
+    const error = validateService(newService);
+    if (error) {
+      return res.status(400).json({ error });
     }
 
     // Insert it. MongoDB adds a unique _id automatically.
@@ -201,6 +225,23 @@ router.get("/summary/monthly", async (req, res) => {
   }
 });
 
+// GET /api/services/summary/due-soon
+// Returns each vehicle (that has service history) with its predicted next
+// service by mileage: dueAtMileage and milesLeft (negative = overdue), most
+// urgent first. The frontend decides what counts as "soon" and how to display
+// it. Grouped under summary/ with the other computed reports; like them it
+// must stay ABOVE "/:id".
+router.get("/summary/due-soon", async (req, res) => {
+  try {
+    const dueSoon = await db.getDueSoon();
+    console.log("GET /api/services/summary/due-soon:", dueSoon.length, "vehicles");
+    res.json(dueSoon);
+  } catch (error) {
+    console.error("GET /api/services/summary/due-soon failed:", error.message);
+    res.status(500).json({ error: "Failed to build due-soon list" });
+  }
+});
+
 /*=============================================
 =            GET/PUT/DELETE Single Records          =
 =============================================*/
@@ -231,10 +272,11 @@ router.put("/:id", requireValidId, async (req, res) => {
     // Build the document from the request body (shared with POST).
     const updatedFields = buildServiceFromBody(req.body);
 
-    // PUT is a full replace, so the same valid-vehicle check as POST applies:
-    // otherwise a bad/missing vehicleId would write null and orphan the record.
-    if (!updatedFields.vehicleId) {
-      return res.status(400).json({ error: "A valid vehicleId is required" });
+    // PUT is a full replace, so the same validation as POST applies (otherwise
+    // a bad vehicleId would orphan the record, or a bad interval slip in).
+    const error = validateService(updatedFields);
+    if (error) {
+      return res.status(400).json({ error });
     }
 
     const result = await db.updateService(req.objectId, updatedFields);

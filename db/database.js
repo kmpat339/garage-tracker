@@ -26,8 +26,13 @@ function createDatabase() {
   async function getClient() {
     const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
     const client = await MongoClient.connect(uri);
-    const services = client.db(DEFAULT_DB_NAME).collection("services");
-    return { client, services };
+    const database = client.db(DEFAULT_DB_NAME);
+    const services = database.collection("services");
+    // Most methods only use `services`. due-soon also needs `vehicles`, so we
+    // expose it (and the raw db handle) here. Methods destructure just what
+    // they need, so the extra keys don't affect the existing methods.
+    const vehicles = database.collection("vehicles");
+    return { client, services, vehicles };
   }
 
   // The object we build up and return. Methods get attached below.
@@ -139,6 +144,69 @@ function createDatabase() {
         { $sort: { _id: 1 } },
       ];
       return await services.aggregate(pipeline).toArray();
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Due-soon: for each vehicle, predict its NEXT service by mileage.
+  // This needs data from BOTH collections. We keep it simple and beginner-
+  // friendly: fetch all vehicles and all services with two plain find() calls,
+  // then combine them in ordinary JavaScript (no aggregation pipeline).
+  // Vehicles with no service history are omitted (we can't predict for them).
+  // Output (one row per vehicle, most urgent first):
+  //   { vehicleId, nickname, currentMileage, lastServiceMileage,
+  //     recommendedInterval, dueAtMileage, milesLeft }
+  // where dueAtMileage = lastServiceMileage + recommendedInterval, and
+  //       milesLeft     = dueAtMileage - currentMileage  (negative = overdue).
+  // We return the raw numbers; the frontend decides what counts as "overdue"
+  // vs "due soon" and how to display it (that's a presentation choice).
+  me.getDueSoon = async function () {
+    const { client, services, vehicles } = await getClient();
+    try {
+      // Two simple reads.
+      const allVehicles = await vehicles.find({}).toArray();
+      const allServices = await services.find({}).toArray();
+
+      const rows = [];
+      for (const vehicle of allVehicles) {
+        // This vehicle's services. vehicleId and _id are both ObjectId, so
+        // compare them as strings to be safe.
+        const vehicleServices = allServices.filter(
+          (s) => s.vehicleId.toString() === vehicle._id.toString(),
+        );
+
+        // No history -> can't predict -> skip this vehicle.
+        if (vehicleServices.length === 0) {
+          continue;
+        }
+
+        // "Latest" = the service with the highest mileage. Sort a copy desc
+        // and take the first.
+        const latest = [...vehicleServices].sort(
+          (a, b) => b.mileageAtService - a.mileageAtService,
+        )[0];
+
+        // compute the due mileage and remaining miles
+        const dueAtMileage =
+          latest.mileageAtService + latest.recommendedInterval;
+        const milesLeft = dueAtMileage - vehicle.currentMileage;
+
+        // Add the computed values to the row
+        rows.push({
+          vehicleId: vehicle._id,
+          nickname: vehicle.nickname,
+          currentMileage: vehicle.currentMileage,
+          lastServiceMileage: latest.mileageAtService,
+          recommendedInterval: latest.recommendedInterval,
+          dueAtMileage,
+          milesLeft,
+        });
+      }
+
+      // Most urgent first (smallest/most-negative milesLeft at the top).
+      rows.sort((a, b) => a.milesLeft - b.milesLeft);
+      return rows;
     } finally {
       await client.close();
     }
