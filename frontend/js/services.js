@@ -49,6 +49,20 @@ async function MyFrontEnd() {
     row.appendChild(td);
   }
 
+  // Fill the shared <datalist> with one suggestion per vehicle nickname. Both
+  // vehicle inputs (filter + form) use this list to autocomplete. The user
+  // types/picks a NICKNAME; later we map it back to the _id the API expects by
+  // looking it up in the `vehicles` array (vehicles.find by nickname).
+  function fillVehicleDatalist(vehicles) {
+    const datalist = document.getElementById("vehicle-options");
+    datalist.innerHTML = "";
+    for (let v of vehicles) {
+      const option = document.createElement("option");
+      option.value = v.nickname;
+      datalist.appendChild(option);
+    }
+  }
+
   // --- rendering ----------------------------------------------------------
 
   // Fill the service table. nameById maps vehicleId -> nickname.
@@ -96,27 +110,21 @@ async function MyFrontEnd() {
 
   // --- run ----------------------------------------------------------------
 
-  // Fetch the services + vehicles and (re)draw the table. Call this again
-  // whenever the data changes (e.g. after adding/editing/deleting later) to
-  // refresh the list.
+
+  // Re-fetch just the services and redraw the table. Call this again whenever
+  // the data changes (after add/edit/delete later) to refresh the list.
   async function refreshServices() {
-    const [services, vehicles] = await Promise.all([
-      fetchServices(),
-      fetchVehicles(),
-    ]);
-    const nameById = buildVehicleNameMap(vehicles);
-    console.log(
-      "Loaded",
-      services.length,
-      "services,",
-      vehicles.length,
-      "vehicles",
-    );
+    const services = await fetchServices();
+    console.log("Loaded", services.length, "services");
     displayServices(services, nameById);
   }
 
-  // Initial load.
-  refreshServices();
+  // Initial load: get vehicles once, set up the datalist + name map, then
+  // load the services.
+  let vehicles = await fetchVehicles();
+  let nameById = buildVehicleNameMap(vehicles);
+  fillVehicleDatalist(vehicles);
+  await refreshServices();
 }
 
 MyFrontEnd();

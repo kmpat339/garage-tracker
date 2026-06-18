@@ -68,14 +68,28 @@
             <form id="filter-form" class="row g-2 mb-4 align-items-end">
               <div class="col">
                 <label for="filter-vehicle" class="form-label">Vehicle</label>
-                <select id="filter-vehicle" class="form-select">
-                  <option value="">All vehicles</option>
-                </select>
+                <!-- Type-to-search: the <datalist> suggestions (nicknames) are
+                     filled by JS. JS maps the typed nickname back to its _id. -->
+                <input
+                  id="filter-vehicle"
+                  class="form-control"
+                  list="vehicle-options"
+                  placeholder="All vehicles"
+                />
               </div>
 
               <div class="col">
                 <label for="filter-type" class="form-label">Type</label>
-                <input id="filter-type" type="text" class="form-control" />
+                <select id="filter-type" class="form-select">
+                  <option value="">All types</option>
+                  <option value="oil change">Oil change</option>
+                  <option value="tire rotation">Tire rotation</option>
+                  <option value="brakes">Brakes</option>
+                  <option value="battery">Battery</option>
+                  <option value="inspection">Inspection</option>
+                  <option value="repair">Repair</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
 
               <div class="col">
@@ -236,10 +250,18 @@
             <form id="service-form">
               <div class="mb-3">
                 <label for="form-vehicle" class="form-label">Vehicle</label>
-                <select id="form-vehicle" class="form-select">
-                  <option value="">Select a vehicle…</option>
-                </select>
+                <!-- Type-to-search; shares the same #vehicle-options datalist. -->
+                <input
+                  id="form-vehicle"
+                  class="form-control"
+                  list="vehicle-options"
+                  placeholder="Type a vehicle nickname…"
+                />
               </div>
+
+              <!-- Shared suggestion list for both vehicle inputs above; JS fills
+                   it with one <option value="nickname"> per vehicle. -->
+              <datalist id="vehicle-options"></datalist>
 
               <div class="mb-3">
                 <label for="form-date" class="form-label">Date</label>
@@ -248,8 +270,9 @@
 
               <div class="mb-3">
                 <label for="form-type" class="form-label">Service Type</label>
-                <!-- Fixed list of service types; "other" reveals a free-text box
-                     (show/hide wired in JS later). -->
+                <!-- Fixed list of service types. If "other" is picked, the
+                     Additional Notes field becomes required (enforced in JS +
+                     backend) so the user explains what the service was. -->
                 <select id="form-type" class="form-select">
                   <option value="">Select a type…</option>
                   <option value="oil change">Oil change</option>
@@ -260,20 +283,6 @@
                   <option value="repair">Repair</option>
                   <option value="other">Other</option>
                 </select>
-              </div>
-
-              <!-- Custom type, only used/shown when "other" is selected.
-                   Starts hidden (Bootstrap d-none); JS toggles it. -->
-              <div class="mb-3 d-none" id="form-type-other-wrap">
-                <label for="form-type-other" class="form-label"
-                  >Custom type</label
-                >
-                <input
-                  id="form-type-other"
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter the service type"
-                />
               </div>
 
               <div class="mb-3">
@@ -316,7 +325,7 @@
 
               <div class="mb-3">
                 <label for="form-notes" class="form-label"
-                  >Additional Notes (optional)</label
+                  >Additional Notes</label
                 >
                 <textarea
                   id="form-notes"
