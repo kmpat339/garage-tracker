@@ -1,9 +1,9 @@
 // server.js
-// This is the entry point of the app. It starts the Express web server,
-// serves the frontend files, and connects to MongoDB before listening.
+// This is the entry point of the app. It starts the Express web server and
+// serves the frontend files. The database connects on its own inside each
+// db method (see db/database.js), so there's nothing to connect here.
 
 import express from "express";
-import db from "./db/database.js";
 import servicesRouter from "./routes/services.js";
 
 const app = express();
@@ -26,19 +26,6 @@ app.get("/api/test", (req, res) => {
 // reachable under /api/services (e.g. its GET "/" answers GET /api/services).
 app.use("/api/services", servicesRouter);
 
-// Connect to the database FIRST, and only start listening once it succeeds.
-// This way, by the time any request comes in, the database is ready.
-// If the connection fails (e.g. the Mongo container isn't running), we
-// print a friendly message and exit instead of crashing with a stack trace.
-async function startApp() {
-  try {
-    await db.init();
-    app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start the app:", error.message);
-  }
-}
-
-startApp();
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

@@ -1,12 +1,16 @@
 // db/database.js
 // This module is the ONLY place that talks directly to MongoDB.
-// It connects once when the server starts, then hands the database
-// back to whoever needs it (the routes) through getDatabase().
+// The routes never touch the database; they call the methods below
+// (getServices, createService, ...) and just shape the HTTP response.
 //
 // It's built as a "factory": createDatabase() builds an object with the
-// methods below. `client` and `db` live inside the factory (a closure),
-// so they're private — nothing outside this file can touch them directly.
-// We export ONE shared instance, so the whole app uses the same connection.
+// methods, then we export ONE shared instance.
+//
+// Connection style: each method opens its OWN connection with getClient()
+// and closes it in a `finally` block when it's done. This keeps every
+// method self-contained and easy to read for a beginner project. (A bigger
+// app would open one connection at startup and reuse it; we trade a little
+// efficiency for simplicity here.)
 
 import { MongoClient } from "mongodb";
 
@@ -15,54 +19,77 @@ import { MongoClient } from "mongodb";
 const DEFAULT_DB_NAME = "garage";
 
 function createDatabase() {
-  // Private state — one shared client and one shared database handle.
-  // They start as null and get filled in by init().
-  let client = null;
-  let db = null;
+  // Open a fresh connection and hand back the client (so we can close it)
+  // and the "services" collection (so the method can read/write it).
+  // The connection string lives in .env (never in the code); server.js
+  // loads .env via `node --env-file=.env`.
+  async function getClient() {
+    const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+    const client = await MongoClient.connect(uri);
+    const services = client.db(DEFAULT_DB_NAME).collection("services");
+    return { client, services };
+  }
 
-  // The object we build up and return. Methods get attached below, then
-  // we return `me` at the end.
+  // The object we build up and return. Methods get attached below.
   const me = {};
 
-  // Call this ONCE, when the server starts up.
-  // It reads the secret connection string from the environment (.env),
-  // connects to MongoDB, and remembers the database so getDatabase() can return it.
-  me.init = async function ({ dbName = DEFAULT_DB_NAME } = {}) {
-    // The connection string lives in .env (never in the code) so we don't
-    // expose our credentials. server.js loads .env via `node --env-file=.env`.
-    const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
-
-    client = new MongoClient(uri);
-
-    // Try to connect. If it fails, print the reason and re-throw so the
-    // caller (server.js) can decide what to do (it stops the server).
+  // Return service records matching `filter` (an empty {} matches everything).
+  // The route builds the filter from the query string and passes it in.
+  me.getServices = async function (filter = {}) {
+    const { client, services } = await getClient();
     try {
-      await client.connect();
-    } catch (error) {
-      console.error("Could not connect to MongoDB:", error.message);
-      throw error;
+      return await services.find(filter).toArray();
+    } finally {
+      await client.close();
     }
-
-    // Pick the database to use inside the MongoDB server.
-    // (A single MongoDB server can hold many databases.)
-    db = client.db(dbName);
-
-    console.log(`Connected to MongoDB (database: "${dbName}")`);
-    return db;
   };
 
-  // Routes call this to get the database so they can read/write collections.
-  // If it's called before init() finished, we fail loudly
-  // instead of silently returning null.
-  me.getDatabase = function () {
-    if (!db) {
-      throw new Error("Database not connected yet. Call init() first.");
+  // Return a single service by its _id, or null if not found.
+  // The route validates/converts the id first, so `objectId` is a real ObjectId.
+  me.getServiceById = async function (objectId) {
+    const { client, services } = await getClient();
+    try {
+      return await services.findOne({ _id: objectId });
+    } finally {
+      await client.close();
     }
-    return db;
+  };
+
+  // Insert a new service document. Returns the result so the route can read
+  // the auto-generated insertedId. MongoDB adds the unique _id automatically.
+  me.createService = async function (doc) {
+    const { client, services } = await getClient();
+    try {
+      return await services.insertOne(doc);
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Replace the listed fields on the service with this _id. Returns the result
+  // so the route can check matchedCount (0 = no document had that id).
+  me.updateService = async function (objectId, fields) {
+    const { client, services } = await getClient();
+    try {
+      return await services.updateOne({ _id: objectId }, { $set: fields });
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Delete the service with this _id. Returns the result so the route can
+  // check deletedCount (0 = no document had that id).
+  me.deleteService = async function (objectId) {
+    const { client, services } = await getClient();
+    try {
+      return await services.deleteOne({ _id: objectId });
+    } finally {
+      await client.close();
+    }
   };
 
   return me;
 }
 
-// Export ONE shared instance so the whole app uses the same connection.
+// Export ONE shared instance so the whole app uses the same db object.
 export default createDatabase();

@@ -2,18 +2,16 @@
 // All the URLs for service records live here. This is an Express "Router" —
 // a mini-app that groups related routes. server.js mounts it under
 // "/api/services", so the route below (GET "/") answers GET /api/services.
+//
+// These handlers do HTTP work only: read the request, call a db method, and
+// shape the response (status codes + JSON). All MongoDB work lives in
+// db/database.js — this file never touches a collection directly.
 
 import express from "express";
 import { ObjectId } from "mongodb";
 import db from "../db/database.js";
 
 const router = express.Router();
-
-// Small helper: returns the "services" collection. Writing the collection
-// name in one place avoids typos and repetition across the routes below.
-function servicesCollection() {
-  return db.getDatabase().collection("services");
-}
 
 // Small helper: turn the id from the URL (a string) into a MongoDB ObjectId,
 // which is what _id is actually stored as. Returns null if the string isn't a
@@ -63,9 +61,42 @@ function buildServiceFromBody(body) {
     cost: toNumberOrNull(body.cost),
     recommendedInterval: toNumberOrNull(body.recommendedInterval),
     shopName: body.shopName,
-    shopRating: toNumberOrNull(body.shopRating),
+    serviceRating: toNumberOrNull(body.serviceRating),
     notes: body.notes,
   };
+}
+
+// Build a MongoDB filter object from the query string. Starts empty (= match
+// everything) and adds a condition only for each filter actually provided.
+// This is request-parsing, so it lives in the route; db.getServices() just
+// receives the finished filter.
+function buildFilterFromQuery(query) {
+  const filter = {};
+
+  // Filter by vehicle: /api/services?vehicleId=car-1
+  if (query.vehicleId) {
+    filter.vehicleId = query.vehicleId;
+  }
+
+  // Filter by service type: /api/services?serviceType=brakes
+  if (query.serviceType) {
+    filter.serviceType = query.serviceType;
+  }
+
+  // Filter by date range: /api/services?from=2026-01-01&to=2026-06-30
+  // Dates are stored as "YYYY-MM-DD" strings, which compare correctly as text.
+  // $gte = on or after `from`; $lte = on or before `to`. Either end is optional.
+  if (query.from || query.to) {
+    filter.date = {};
+    if (query.from) {
+      filter.date.$gte = query.from;
+    }
+    if (query.to) {
+      filter.date.$lte = query.to;
+    }
+  }
+
+  return filter;
 }
 
 /*=============================================
@@ -78,34 +109,8 @@ function buildServiceFromBody(body) {
 // returns everything.
 router.get("/", async (req, res) => {
   try {
-    // Build a MongoDB query object. It starts empty (= match everything) and
-    // we add a condition only for each filter that was actually provided.
-    const query = {};
-
-    // Filter by vehicle: /api/services?vehicleId=car-1
-    if (req.query.vehicleId) {
-      query.vehicleId = req.query.vehicleId;
-    }
-
-    // Filter by service type: /api/services?serviceType=brakes
-    if (req.query.serviceType) {
-      query.serviceType = req.query.serviceType;
-    }
-
-    // Filter by date range: /api/services?from=2026-01-01&to=2026-06-30
-    // Dates are stored as "YYYY-MM-DD" strings, which compare correctly as text.
-    // $gte = on or after `from`; $lte = on or before `to`. Either end is optional.
-    if (req.query.from || req.query.to) {
-      query.date = {};
-      if (req.query.from) {
-        query.date.$gte = req.query.from;
-      }
-      if (req.query.to) {
-        query.date.$lte = req.query.to;
-      }
-    }
-
-    const services = await servicesCollection().find(query).toArray();
+    const filter = buildFilterFromQuery(req.query);
+    const services = await db.getServices(filter);
     console.log("GET /api/services succeeded:", services.length, "records");
     res.json(services);
   } catch (error) {
@@ -130,8 +135,7 @@ router.post("/", async (req, res) => {
     }
 
     // Insert it. MongoDB adds a unique _id automatically.
-    // result is a status summary
-    const result = await servicesCollection().insertOne(newService);
+    const result = await db.createService(newService);
     console.log("POST /api/services succeeded:", result.insertedId);
 
     // Respond 201 ("created") with the new record, including its new _id.
@@ -151,7 +155,7 @@ router.post("/", async (req, res) => {
 // requireValidId runs first and puts the converted id on req.objectId.
 router.get("/:id", requireValidId, async (req, res) => {
   try {
-    const service = await servicesCollection().findOne({ _id: req.objectId });
+    const service = await db.getServiceById(req.objectId);
     console.log("GET /api/services/:id:", service ? "found" : "not found");
     if (!service) {
       return res.status(404).json({ error: "Service not found" });
@@ -172,11 +176,7 @@ router.put("/:id", requireValidId, async (req, res) => {
     // Build the document from the request body (shared with POST).
     const updatedFields = buildServiceFromBody(req.body);
 
-    // $set replaces the listed fields on the matching document.
-    const result = await servicesCollection().updateOne(
-      { _id: req.objectId },
-      { $set: updatedFields },
-    );
+    const result = await db.updateService(req.objectId, updatedFields);
     console.log("PUT /api/services/:id matched:", result.matchedCount);
 
     // matchedCount is 0 when no document had that id.
@@ -196,7 +196,7 @@ router.put("/:id", requireValidId, async (req, res) => {
 // requireValidId runs first and puts the converted id on req.objectId.
 router.delete("/:id", requireValidId, async (req, res) => {
   try {
-    const result = await servicesCollection().deleteOne({ _id: req.objectId });
+    const result = await db.deleteService(req.objectId);
     console.log("DELETE /api/services/:id deleted:", result.deletedCount);
 
     // deletedCount is 0 when no document had that id.
