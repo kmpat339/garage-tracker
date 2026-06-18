@@ -25,15 +25,15 @@ app.get("/api/test", (req, res) => {
 // This way, by the time any request comes in, the database is ready.
 // If the connection fails (e.g. the Mongo container isn't running), we
 // print a friendly message and exit instead of crashing with a stack trace.
-async function start() {
+async function startApp() {
   try {
     await initDatabase();
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start the server:", error.message);
+    console.error("Failed to start the app:", error.message);
   }
 }
 
-start();
+startApp();
