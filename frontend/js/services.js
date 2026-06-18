@@ -116,6 +116,134 @@ async function MyFrontEnd() {
     console.log("Displayed services with", services.length, "entries");
   }
 
+  // --- the add/edit form --------------------------------------------------
+
+  // Read the form fields into an object shaped like the API expects. The vehicle
+  // input holds a typed NICKNAME, so we look up its _id (the real foreign key)
+  // the same way the filter does. Numbers are sent as their raw string values;
+  // the backend turns "" into null and coerces the rest, so we don't here.
+  function readServiceForm() {
+    const typedNickname = document.getElementById("form-vehicle").value.trim();
+    const match = vehicles.find((v) => v.nickname === typedNickname);
+
+    return {
+      // match?._id is undefined if the nickname didn't match; the backend
+      // rejects a missing/invalid vehicleId with a 400. (Step C adds a friendly
+      // front-end check before we ever get here.)
+      vehicleId: match?._id,
+      date: document.getElementById("form-date").value,
+      serviceType: document.getElementById("form-type").value,
+      mileageAtService: document.getElementById("form-mileage").value,
+      cost: document.getElementById("form-cost").value,
+      recommendedInterval: document.getElementById("form-interval").value,
+      serviceRating: document.getElementById("form-rating").value,
+      shopName: document.getElementById("form-shop").value,
+      notes: document.getElementById("form-notes").value,
+    };
+  }
+
+  // Show a message in the form's shared error line, and (if given) put a red
+  // border on the field that caused it so the user can see which one.
+  function showFormError(message, fieldId) {
+    document.getElementById("form-error").textContent = message;
+    if (fieldId) {
+      document.getElementById(fieldId).classList.add("field-error");
+    }
+  }
+
+  // Clear the error line and remove the red border from every form field.
+  // Called at the start of each save attempt so old errors don't linger.
+  function clearFormErrors() {
+    document.getElementById("form-error").textContent = "";
+    const fields = document.querySelectorAll("#service-form .field-error");
+    for (let field of fields) {
+      field.classList.remove("field-error");
+    }
+  }
+
+  // Light front-end gate: a quick check so we DON'T send obviously-bad data to
+  // the API. It only checks "is it filled in / does the vehicle exist" — the
+  // backend still owns the detailed rules (whole numbers, ranges, etc.) and its
+  // message is shown if the request gets that far. Returns true if OK to send.
+  // `body` is the object from readServiceForm(). Stops at the first problem.
+  function validateServiceForm(body) {
+    // Vehicle: readServiceForm sets vehicleId to undefined when the typed
+    // nickname didn't match any vehicle (including when it's left empty).
+    if (!body.vehicleId) {
+      showFormError("Please pick a vehicle from the list.", "form-vehicle");
+      return false;
+    }
+    if (!body.date) {
+      showFormError("Please enter a date.", "form-date");
+      return false;
+    }
+    if (!body.serviceType) {
+      showFormError("Please choose a service type.", "form-type");
+      return false;
+    }
+    if (body.mileageAtService === "") {
+      showFormError("Please enter the mileage.", "form-mileage");
+      return false;
+    }
+    if (body.cost === "") {
+      showFormError("Please enter the cost.", "form-cost");
+      return false;
+    }
+    if (body.recommendedInterval === "") {
+      showFormError("Please enter the recommended interval.", "form-interval");
+      return false;
+    }
+    if (body.serviceRating === "") {
+      showFormError("Please enter a rating (1-5).", "form-rating");
+      return false;
+    }
+    if (!body.shopName.trim()) {
+      showFormError("Please enter the shop name.", "form-shop");
+      return false;
+    }
+    // "other" service type: notes explain what it was, so require them.
+    if (body.serviceType === "other" && !body.notes.trim()) {
+      showFormError(
+        'For "other" service type, please describe it in notes.',
+        "form-notes",
+      );
+      return false;
+    }
+    return true;
+  }
+
+  // Clear the form and put it back to Add mode. Called after a successful save.
+  function resetForm() {
+    document.getElementById("service-form").reset();
+    clearFormErrors();
+    editingId = null;
+  }
+
+  // Send the form data to the API. For now this is always a POST (create).
+  // Step D makes it switch to PUT when editingId is set. On success we clear the
+  // form and refresh the list so the new row shows up.
+  async function saveService(body) {
+    const res = await fetch("/api/services", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      // The backend sends a 400 with { error: "..." } for invalid data. Show
+      // that message in the form's error line (this is our detailed-rules
+      // layer: the front-end gate only catches empty/missing fields).
+      const data = await res.json();
+      showFormError(data.error ?? "Could not save the service.");
+      console.error("Error saving service:", data.error ?? res.statusText);
+      return;
+    }
+
+    console.log("Saved service");
+    resetForm();
+    await refreshServices();
+  }
+
   // --- filters ------------------------------------------------------------
 
   // Read the filter fields and build a "?...=..." query string for the API.
@@ -127,7 +255,9 @@ async function MyFrontEnd() {
 
     // Vehicle: the input holds a typed NICKNAME; convert it to the _id the API
     // wants. Empty = all vehicles. A non-empty, unmatched nickname is an error.
-    const typedNickname = document.getElementById("filter-vehicle").value.trim();
+    const typedNickname = document
+      .getElementById("filter-vehicle")
+      .value.trim();
     if (typedNickname) {
       const match = vehicles.find((v) => v.nickname === typedNickname);
       if (!match) {
@@ -172,17 +302,50 @@ async function MyFrontEnd() {
     displayServices(services, nameById);
   }
 
-  // Apply button: re-run the fetch with the current filters. preventDefault
-  // stops the form from reloading the page.
-  document.getElementById("filter-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    refreshServices();
-  });
+  // Wire up the page-level listeners once, on load. (The Edit/Delete buttons on
+  // each table row are wired inside displayServices instead, because those rows
+  // are created dynamically and each one needs its own service.)
+  function setupEventListeners() {
+    // Apply button: re-run the fetch with the current filters. preventDefault
+    // stops the form from reloading the page.
+    document
+      .getElementById("filter-form")
+      .addEventListener("submit", (event) => {
+        event.preventDefault();
+        refreshServices();
+      });
 
-  // Initial load: get vehicles once, set up the datalist + name map, then
-  // load the services.
+    // Add/Edit form: read the fields, run the front-end gate, and save.
+    // preventDefault stops the browser from reloading the page on submit.
+    document
+      .getElementById("service-form")
+      .addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearFormErrors();
+        const body = readServiceForm();
+        // Gate failed: a message + red border are already showing; don't send.
+        if (!validateServiceForm(body)) {
+          return;
+        }
+        saveService(body);
+      });
+  }
+
+  /*    ======
+        Main run function for the frontend application.
+      ==========
+  */
+  // Initial load: wire the listeners first (the form elements already exist in
+  // the HTML), then get vehicles once, set up the datalist + name map, and load
+  // the services.
+  setupEventListeners();
   let vehicles = await fetchVehicles();
   let nameById = buildVehicleNameMap(vehicles);
+  // null = Add mode (Save creates). A service _id here = Edit mode (Save updates
+  // that record); set by the row Edit button, cleared by resetForm. (Used in a
+  // later step; declared here with the other page-level state.)
+  let editingId = null;
+
   fillVehicleDatalist(vehicles);
   await refreshServices();
 }

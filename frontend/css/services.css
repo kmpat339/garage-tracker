@@ -25,3 +25,10 @@ h2 {
   background-color: #fff; /* solid/opaque so scrolling rows don't bleed through */
   border-bottom: 2px solid #dee2e6; /* Bootstrap's table border color */
 }
+
+/* Our own form-validation style (we deliberately don't use Bootstrap's
+   is-invalid). JS adds .field-error to an input/select that failed the
+   front-end check, and removes it once the field is fixed. */
+.field-error {
+  border: 1px solid red;
+}

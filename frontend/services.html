@@ -248,8 +248,9 @@
         <div class="col-md-4">
           <!-- Add/Edit form. One form does both: empty = add (POST); clicking
                Edit on a row fills it and switches to update (PUT). Wired in JS. -->
-          <section class="border rounded p-3">
-            <h2>Add / Edit a Service</h2>
+          <section id="service-form-section" class="border rounded p-3">
+            <!-- Heading text is swapped by JS: "Add a Service" <-> "Edit Service". -->
+            <h2 id="form-heading">Add a Service</h2>
             <form id="service-form">
               <div class="mb-3">
                 <label for="form-vehicle" class="form-label">Vehicle</label>
@@ -309,7 +310,7 @@
 
               <div class="mb-3">
                 <label for="form-interval" class="form-label"
-                  >Recommended Interval to Next Service</label
+                  >Recommended Interval (min 3000)</label
                 >
                 <input id="form-interval" type="number" class="form-control" />
               </div>
@@ -337,7 +338,24 @@
                 ></textarea>
               </div>
 
-              <button type="submit" class="btn btn-primary">Save</button>
+              <!-- Save text is swapped by JS: "Save" (add) <-> "Update" (edit). -->
+              <button type="submit" id="form-submit" class="btn btn-primary">
+                Save
+              </button>
+              <!-- Only shown in edit mode (JS removes d-none); clears the form
+                   and returns to add mode. type="button" so it doesn't submit. -->
+              <button
+                type="button"
+                id="form-cancel"
+                class="btn btn-secondary d-none"
+              >
+                Cancel
+              </button>
+
+              <!-- One shared error line for the form: shows the front-end gate's
+                   message (e.g. a missing field) or the error the backend sends
+                   back on a 400. Cleared on a successful save. -->
+              <p id="form-error" class="text-danger mt-2"></p>
             </form>
           </section>
         </div>
