@@ -35,6 +35,21 @@ async function MyFrontEnd() {
     return vehicles;
   }
 
+  // GET one of the three summary reports. `path` is the part after
+  // /api/services/summary/ (e.g. "by-vehicle"). They all return a JSON array,
+  // so one helper covers all three. Returns [] (and logs) on failure, so a
+  // broken endpoint just yields an empty table instead of throwing.
+  async function fetchSummary(path) {
+    const res = await fetch("/api/services/summary/" + path);
+    if (!res.ok) {
+      console.error("Error fetching summary " + path + ":", res.statusText);
+      return [];
+    }
+    const rows = await res.json();
+    console.log("Fetched summary " + path + ":", rows.length, "rows");
+    return rows;
+  }
+
   // --- helpers ------------------------------------------------------------
 
   // Build a lookup: vehicle _id (string) -> nickname. Both the vehicle _id and
@@ -294,7 +309,10 @@ async function MyFrontEnd() {
 
     console.log("Saved service");
     resetForm();
+    // The save changed the data, so refresh both the list and the reports
+    // (totals/counts are derived from the services).
     await refreshServices();
+    await loadSummaries();
   }
 
   // Delete one service. Confirm first (it can't be undone), then DELETE it by
@@ -315,7 +333,111 @@ async function MyFrontEnd() {
     if (editingId === s._id) {
       resetForm();
     }
+    // The delete changed the data, so refresh both the list and the reports.
     await refreshServices();
+    await loadSummaries();
+  }
+
+  // --- summary reports ----------------------------------------------------
+
+  // Render the "Spend by Vehicle" table. Each row is { _id, totalSpent,
+  // serviceCount } where _id is the vehicle's id, so we map it to a nickname.
+  function displayByVehicle(rows) {
+    const tbody = document.getElementById("by-vehicle-tbody");
+    tbody.innerHTML = "";
+    for (let r of rows) {
+      const row = document.createElement("tr");
+      addCell(row, nameById.get(r._id) ?? "Unknown");
+      addCell(row, r.totalSpent != null ? `$${r.totalSpent.toFixed(2)}` : "—");
+      addCell(row, r.serviceCount ?? 0);
+      tbody.appendChild(row);
+    }
+    console.log("Displayed by-vehicle with", rows.length, "rows");
+  }
+
+  // Render the "Spend by Month" table. Each row is { _id, totalSpent,
+  // serviceCount } where _id is a "YYYY-MM" month string.
+  function displayMonthly(rows) {
+    const tbody = document.getElementById("monthly-tbody");
+    tbody.innerHTML = "";
+    for (let r of rows) {
+      const row = document.createElement("tr");
+      addCell(row, r._id ?? "—");
+      addCell(row, r.totalSpent != null ? `$${r.totalSpent.toFixed(2)}` : "—");
+      addCell(row, r.serviceCount ?? 0);
+      tbody.appendChild(row);
+    }
+    console.log("Displayed monthly with", rows.length, "rows");
+  }
+
+  // Render the "Due Soon" table. Each row already has a nickname baked in, plus
+  // currentMileage, dueAtMileage and milesLeft (negative = overdue). The status
+  // dropdown/coloring comes in a later sub-step; this just shows the numbers.
+  function displayDueSoon(rows) {
+    const tbody = document.getElementById("due-soon-tbody");
+    tbody.innerHTML = "";
+    for (let r of rows) {
+      const row = document.createElement("tr");
+      addCell(row, r.nickname ?? "Unknown");
+      addCell(row, r.currentMileage ?? "—");
+      addCell(row, r.dueAtMileage ?? "—");
+      addCell(row, r.milesLeft ?? "—");
+      tbody.appendChild(row);
+    }
+    console.log("Displayed due-soon with", rows.length, "rows");
+  }
+
+  // Fetch all three summaries at once (they don't depend on each other, so we
+  // run them in parallel with Promise.all) and render each table.
+  async function loadSummaries() {
+    const [byVehicle, monthly, dueSoon] = await Promise.all([
+      fetchSummary("by-vehicle"),
+      fetchSummary("monthly"),
+      fetchSummary("due-soon"),
+    ]);
+    // Keep the by-vehicle rows so the sort buttons can re-order them later.
+    byVehicleRows = byVehicle;
+    // Start (and restart, after a CRUD reload) on the default sort: by nickname.
+    sortByVehicle("name");
+    displayMonthly(monthly);
+    displayDueSoon(dueSoon);
+  }
+
+  // Sort the kept Spend-by-Vehicle rows and re-render. No refetch — we re-order
+  // the data we already have. Three modes: "name" (alphabetical by nickname,
+  // the default), "totalSpent" and "serviceCount" (both highest first). Also
+  // highlights the matching button so it's clear which sort is in effect.
+  // sort() mutates byVehicleRows in place, which is fine: it's our own copy.
+  function sortByVehicle(mode = "name") {
+    if (mode === "name") {
+      // Nickname isn't on the row (by-vehicle rows only have the vehicle _id),
+      // so we look it up the same way we render it.
+      byVehicleRows.sort((a, b) => {
+        const nameA = nameById.get(a._id) ?? "";
+        const nameB = nameById.get(b._id) ?? "";
+        return nameA.localeCompare(nameB);
+      });
+    } else {
+      // Numeric keys: highest first.
+      byVehicleRows.sort((a, b) => b[mode] - a[mode]);
+    }
+    displayByVehicle(byVehicleRows);
+    highlightSortButton(mode);
+    console.log("Sorted by-vehicle by", mode);
+  }
+
+  // Put the .sort-active border on the button for the current sort mode and
+  // remove it from the others, so the active sort is visible.
+  function highlightSortButton(mode) {
+    const buttons = {
+      name: "sort-by-name",
+      totalSpent: "sort-by-spend",
+      serviceCount: "sort-by-count",
+    };
+    for (let button_id in buttons) {
+      const button = document.getElementById(buttons[button_id]);
+      button.classList.toggle("sort-active", button_id === mode);
+    }
   }
 
   // --- filters ------------------------------------------------------------
@@ -407,6 +529,17 @@ async function MyFrontEnd() {
     // Cancel button (only visible in Edit mode): clear the form and go back to
     // Add mode, abandoning the edit.
     document.getElementById("form-cancel").addEventListener("click", resetForm);
+
+    // Spend-by-Vehicle sort buttons: re-order the already-fetched rows.
+    document
+      .getElementById("sort-by-name")
+      .addEventListener("click", () => sortByVehicle("name"));
+    document
+      .getElementById("sort-by-spend")
+      .addEventListener("click", () => sortByVehicle("totalSpent"));
+    document
+      .getElementById("sort-by-count")
+      .addEventListener("click", () => sortByVehicle("serviceCount"));
   }
 
   /*    ======
@@ -424,8 +557,14 @@ async function MyFrontEnd() {
   // later step; declared here with the other page-level state.)
   let editingId = null;
 
+  // The Spend-by-Vehicle rows, kept after fetching so the sort buttons can
+  // re-order and re-render them without hitting the API again. (We sort this
+  // data, not the on-screen cells, so we sort real numbers not "$1,234.56".)
+  let byVehicleRows = [];
+
   fillVehicleDatalist(vehicles);
   await refreshServices();
+  await loadSummaries();
 }
 
 MyFrontEnd();

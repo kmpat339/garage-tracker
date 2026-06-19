@@ -40,3 +40,10 @@ h2 {
   border: 2px solid #ffc107; /* amber "caution: editing" border */
   background-color: #fff9e6; /* faint matching tint */
 }
+
+/* Active sort button for Spend by Vehicle. JS adds .sort-active to whichever
+   of the three sort buttons is currently applied, and removes it from the
+   others, so it's clear which sort is in effect. */
+.sort-active {
+  border: 5px solid blue; /* blue border marks the active sort */
+}
