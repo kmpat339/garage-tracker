@@ -175,6 +175,24 @@ async function MyFrontEnd() {
     };
   }
 
+  function showFormSuccess(message) {
+    // change form error color to green
+    document.getElementById("form-error").classList.remove("text-danger");
+    document.getElementById("form-error").classList.add("text-success");
+    document.getElementById("form-error").textContent = message;
+
+    document.getElementById("form-date").classList.add("field-success");
+    document.getElementById("form-type").classList.add("field-success");
+    document.getElementById("form-mileage").classList.add("field-success");
+    document.getElementById("form-cost").classList.add("field-success");
+    document.getElementById("form-interval").classList.add("field-success");
+    document.getElementById("form-rating").classList.add("field-success");
+    document.getElementById("form-shop").classList.add("field-success");
+    document.getElementById("form-notes").classList.add("field-success");
+
+    console.log("Form success highlighting applied successfully.");
+  }
+
   // Show a message in the form's shared error line, and (if given) put a red
   // border on the field that caused it so the user can see which one.
   function showFormError(message, fieldId) {
@@ -186,11 +204,19 @@ async function MyFrontEnd() {
 
   // Clear the error line and remove the red border from every form field.
   // Called at the start of each save attempt so old errors don't linger.
-  function clearFormErrors() {
+  function clearFormStatus() {
     document.getElementById("form-error").textContent = "";
+    document.getElementById("form-error").classList.remove("text-success");
+    document.getElementById("form-error").classList.add("text-danger");
     const fields = document.querySelectorAll("#service-form .field-error");
     for (let field of fields) {
       field.classList.remove("field-error");
+    }
+    const successFields = document.querySelectorAll(
+      "#service-form .field-success",
+    );
+    for (let field of successFields) {
+      field.classList.remove("field-success");
     }
   }
 
@@ -235,7 +261,7 @@ async function MyFrontEnd() {
     document.getElementById("form-shop").value = s.shopName ?? "";
     document.getElementById("form-notes").value = s.notes ?? "";
 
-    clearFormErrors();
+    clearFormStatus();
     enterEditMode();
   }
 
@@ -294,9 +320,10 @@ async function MyFrontEnd() {
   // and by the Cancel button. exitEditMode undoes the Edit-mode visuals.
   function resetForm() {
     document.getElementById("service-form").reset();
-    clearFormErrors();
+    clearFormStatus();
     exitEditMode();
     editingId = null;
+    console.log("Form reset successfully.");
   }
 
   // Send the form data to the API. editingId decides which: null = Add (POST to
@@ -323,7 +350,21 @@ async function MyFrontEnd() {
       return;
     }
 
-    console.log("Saved service");
+    // vehicle nickname
+    const vehicleNickname = nameById.get(body.vehicleId) ?? "Unknown";
+
+    console.log(
+      method === "POST" ? "Added service" : "Updated service",
+      "for",
+      vehicleNickname,
+    );
+
+    showFormSuccess(
+      method === "POST"
+        ? `Service added successfully for ${vehicleNickname}.`
+        : `Service updated successfully for ${vehicleNickname}.`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     resetForm();
     // The save changed the data, so refresh both the list and the reports
     // (totals/counts are derived from the services).
@@ -344,8 +385,13 @@ async function MyFrontEnd() {
       console.error("Error deleting service:", res.statusText);
       return;
     }
-
-    console.log("Deleted service", s._id);
+    const vehicleNickname = nameById.get(s.vehicleId) ?? "Unknown";
+    console.log(
+      "Deleted service with ObjectId",
+      s._id,
+      "for vehicle",
+      vehicleNickname,
+    );
     if (editingId === s._id) {
       resetForm();
     }
@@ -542,6 +588,8 @@ async function MyFrontEnd() {
     document.getElementById("miles-sort-arrow").textContent =
       dueSortDir === "asc" ? "▲" : "▼";
     displayDueSoonForStatus();
+
+    console.log("Summaries loaded and displayed successfully.");
   }
 
   // Sort the kept Spend-by-Vehicle rows and re-render. No refetch — we re-order
@@ -732,6 +780,8 @@ async function MyFrontEnd() {
     updateSortArrows();
     // Redraw the table with the new data.
     displayServices(serviceRows, nameById);
+
+    console.log("Services refreshed and displayed successfully.");
   }
 
   // Wire up the page-level listeners once, on load. (The Edit/Delete buttons on
@@ -753,7 +803,7 @@ async function MyFrontEnd() {
       .getElementById("service-form")
       .addEventListener("submit", (event) => {
         event.preventDefault();
-        clearFormErrors();
+        clearFormStatus();
         const body = readServiceForm();
         // Gate failed: a message + red border are already showing; don't send.
         if (!validateServiceForm(body)) {

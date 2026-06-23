@@ -62,7 +62,6 @@ function money(value) {
 // afterward. vehicleId becomes an ObjectId, or null if missing/invalid.
 function buildServiceFromBody(body) {
   return {
-    vehicleId: toObjectId(body.vehicleId),
     date: body.date,
     serviceType: body.serviceType,
     mileageAtService: num(body.mileageAtService),
@@ -71,6 +70,7 @@ function buildServiceFromBody(body) {
     shopName: body.shopName,
     serviceRating: num(body.serviceRating),
     notes: body.notes,
+    vehicleId: toObjectId(body.vehicleId),
   };
 }
 

@@ -39,6 +39,11 @@ h2 {
   border: 1px solid red;
 }
 
+.field-success {
+  border: 1px solid green;
+}
+
+
 /* Edit-mode accent. JS adds .editing to the form's <section> when the Edit
    button on a row is clicked, so it's obvious at a glance that you're changing
    an existing service (not adding a new one). resetForm removes it. */
