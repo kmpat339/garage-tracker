@@ -2,7 +2,7 @@
 
 A full-stack web application for tracking vehicle maintenance, built with Node.js, Express, MongoDB (native driver), and vanilla JavaScript (ES6) with a Bootstrap-styled, client-side-rendered frontend.
 
-**Live Demo:** [https://garage-tracker.onrender.com/](https://garage-tracker.onrender.com/)
+**Live Website:** [https://garage-tracker.onrender.com/](https://garage-tracker.onrender.com/)
 
 **Demo Video:** TBD
 
@@ -219,11 +219,11 @@ This repository is a course project submission for CS5610 Web Development at Nor
 
 This section discloses where generative AI was used in this project. We used Claude Opus 4.8 model.
 
-1. **Seed data generation.** Sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/). Claude was used to help write the `data/loadServices.js` and `data/loadVehicles.js` scripts that load the JSON files into MongoDB.
+1. **Seed data generation.** Sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/). Claude was used to preprocess the mockaroo files so the vehicleId field in services had a matching ObjectId that existed in the Vehicles collection. Also, preprocessed it so each vehicle had 0-5 vehicles in some random distribution.
 
-2. **Scaffolding and debugging.** Claude was used as a coding aid to scaffold and match the Vehicles and Services files and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
+3. **Scaffolding and debugging.** Claude was used as a coding aid to scaffold and match the Vehicles and Services files and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
 
-3. **Build guidance.** Claude was used throughout the project to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
+4. **Build guidance.** Claude was used throughout the project to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
 
 ---
 
