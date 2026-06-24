@@ -4,9 +4,9 @@
   "description": "Garage-tracker is a full-stack web application for tracking vehicle maintenance.",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --env-file=.env server.js",
     "dev": "node --env-file=.env --watch server.js",
-    "local-run": "node --env-file=.env server.js",
+    "deploy": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

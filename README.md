@@ -87,6 +87,7 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
    # or
    npm start        # one-shot start (requires .env file in project root)
    ```
+   > **Render / production:** set the start command to `npm run deploy` — this runs without `--env-file` so Render's injected environment variables are used directly.
 
 6. Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
