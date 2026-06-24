@@ -14,7 +14,10 @@
     "url": "git+https://github.com/kmpat339/garage-tracker.git"
   },
   "keywords": [],
-  "author": "Khush patel",
+  "author": "Khush Patel",
+  "contributors": [
+    "Nipun Jayakumar"
+  ],
   "license": "MIT",
   "type": "module",
   "bugs": {
