@@ -211,7 +211,7 @@ This project was created as part of the **Web Development Course (Summer 2026)**
 
 ## Project Submissions
 
-- **Design document:** ADD here
+- **Design document:** [Design Document - Project 2 WebDev.pdf](./submission%20materials/Design%20Document%20-%20Project%202%20WebDev.pdf)
 - **Slide deck:** [Google Slides](https://docs.google.com/presentation/d/1pOnxiB1SWecKU4c5VWdYlalRbR9mQkMB/edit?slide=id.p1#slide=id.p1)
 - **Video presentation:** ADD HERE
 - **Thumbnail image:** ADD HERE
