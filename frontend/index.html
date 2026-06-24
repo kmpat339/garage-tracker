@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Garage Tracker</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: beige;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 0.25rem;
+      }
+
+      .tagline {
+        text-align: center;
+        color: #555;
+        margin-bottom: 2rem;
+      }
+
+      .feature-box {
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 1.5rem;
+        background-color: #fff;
+        height: 100%;
+      }
+
+      .feature-box h2 {
+        text-align: left;
+        font-size: 1.3rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-box p {
+        color: #444;
+        margin-bottom: 1.25rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand" href="index.html">Garage Tracker</a>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="vehicles.html">Vehicles</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="services.html">Services</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container mt-5 mb-5">
+      <h1>Garage Tracker</h1>
+      <p class="tagline">
+        One place to manage your vehicles and keep on top of their maintenance.
+      </p>
+
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="feature-box">
+            <h2>Your Garage</h2>
+            <p>
+              Add and manage the vehicles you own. Track make, model, year,
+              current mileage, purchase price, and status (active, in repair,
+              garaged, or sold). Search and filter your fleet, update the
+              odometer with a quick tap, and edit or remove any vehicle.
+            </p>
+            <a href="vehicles.html" class="btn btn-primary">Go to Vehicles &rarr;</a>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="feature-box">
+            <h2>Service Records</h2>
+            <p>
+              Log every maintenance visit — oil changes, tire rotations, brakes,
+              and more. See a full history for any vehicle, filter by type or
+              date, and check summary reports: total spend per vehicle, monthly
+              spending, and which cars are coming due for their next service.
+            </p>
+            <a href="services.html" class="btn btn-primary">Go to Services &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
