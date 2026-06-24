@@ -110,7 +110,7 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
 
 ### Vehicles ("Your Garage")
 
-![Vehicles page](./images/vehicles-page.jpeg)
+![Vehicles page](./images/vehicles-pag.jpeg)
 
 ### Services (Maintenance History & Costs)
 
