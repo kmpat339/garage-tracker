@@ -75,10 +75,10 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
    MONGODB_URI=mongodb://localhost:27017
    ```
 
-4. **Seed the database** with sample vehicles and services:
+4. **Import sample data** into MongoDB:
    ```bash
-   node --env-file=.env data/loadVehicles.js
-   node --env-file=.env data/loadServices.js
+   mongoimport --db garage --collection vehicles --file data/vehicles-backup.json --jsonArray
+   mongoimport --db garage --collection services --file data/services-backup.json --jsonArray
    ```
 
 5. **Start the server:**
@@ -136,10 +136,8 @@ garage-tracker/
 │       ├── vehicles.js
 │       └── services.js
 ├── data/
-│   ├── vehicles-mockaroo.json
-│   ├── services-mockaroo.json
-│   ├── loadVehicles.js       # Seed script for vehicles
-│   └── loadServices.js       # Seed script for services (links to vehicle _ids)
+│   ├── vehicles-backup.json  # Sample vehicles data (import with mongoimport)
+│   └── services-backup.json  # Sample services data (import with mongoimport)
 ├── README.md
 ├── LICENSE                   # MIT
 ├── package.json
