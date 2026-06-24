@@ -181,6 +181,7 @@ async function MyFrontEnd() {
     document.getElementById("form-error").classList.add("text-success");
     document.getElementById("form-error").textContent = message;
 
+    document.getElementById("form-vehicle").classList.add("field-success");
     document.getElementById("form-date").classList.add("field-success");
     document.getElementById("form-type").classList.add("field-success");
     document.getElementById("form-mileage").classList.add("field-success");

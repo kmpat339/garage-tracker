@@ -91,6 +91,18 @@ function createServicesDb() {
     }
   };
 
+  // Delete ALL services belonging to a vehicle. Called by the vehicles route
+  // when a vehicle is deleted, so orphaned service records don't linger in the
+  // summaries. Returns the result (deletedCount = how many were removed).
+  me.deleteServicesByVehicle = async function (vehicleObjectId) {
+    const { client, services } = await getClient();
+    try {
+      return await services.deleteMany({ vehicleId: vehicleObjectId });
+    } finally {
+      await client.close();
+    }
+  };
+
   // Summary: total spend + number of services for EACH vehicle.
   // Unlike find() (which returns whole rows as-is), aggregate() runs the docs
   // through a pipeline of stages that can GROUP rows and do MATH across them,

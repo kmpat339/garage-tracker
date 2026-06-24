@@ -7,7 +7,9 @@
 // nicknames + dropdowns). This is Nipun's feature area — more routes later.
 
 import express from "express";
+import { ObjectId } from "mongodb";
 import db from "../db/vehiclesDb.js";
+import servicesDb from "../db/servicesDb.js";
 
 const router = express.Router();
 
@@ -304,12 +306,17 @@ router.delete("/:id", requireValidId, async (req, res) => {
   try {
     const result = await db.deleteVehicle(req.objectId);
     console.log("DELETE /api/vehicles/:id deleted:", result.deletedCount);
- 
+
     // deletedCount is 0 when no document had that id.
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Vehicle not found" });
     }
- 
+
+    // Remove all service records for this vehicle so they don't linger as
+    // orphans in the summaries (spend-by-vehicle, due-soon, etc.).
+    const servicesResult = await servicesDb.deleteServicesByVehicle(req.objectId);
+    console.log("DELETE /api/vehicles/:id cascade-deleted", servicesResult.deletedCount, "services");
+
     res.json({ message: "Vehicle deleted" });
   } catch (error) {
     console.error("DELETE /api/vehicles/:id failed:", error.message);

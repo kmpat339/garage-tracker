@@ -9,7 +9,7 @@ import servicesRouter from "./routes/services.js";
 import vehiclesRouter from "./routes/vehicles.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Let Express understand JSON request bodies (e.g. when the form sends data).
 app.use(express.json());
