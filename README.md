@@ -88,6 +88,8 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
    mongoimport --db garage --collection services --file data/services-backup.json --jsonArray
    ```
 
+   > The seed files include **300 vehicles** and **700 service records** — 1,000+ total records across the two collections.
+
 5. **Start the server:**
 
    ```bash
