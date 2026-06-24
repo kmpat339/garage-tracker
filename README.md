@@ -97,21 +97,15 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
 
 ### Home
 
-![Home page]
-
-*INSERT IMAGE*
+![Home page](./images/homepage.jpeg)
 
 ### Vehicles ("Your Garage")
 
-![Vehicles page]
-
-*INSERT IMAGE*
+![Vehicles page](./images/services-page.jpeg)
 
 ### Services (Maintenance History & Costs)
 
-![Services page]
-
-*INSERT IMAGE*
+![Services page](./images/vehicles-page.jpeg)
 
 ---
 
