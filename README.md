@@ -214,7 +214,7 @@ This project was created as part of the **Web Development Course (Summer 2026)**
 - **Design document:** [Design Document - Project 2 WebDev.pdf](./submission%20materials/Design%20Document%20-%20Project%202%20WebDev.pdf)
 - **Slide deck:** [Google Slides](https://docs.google.com/presentation/d/1pOnxiB1SWecKU4c5VWdYlalRbR9mQkMB/edit?slide=id.p1#slide=id.p1)
 - **Video presentation:** (https://youtu.be/IdhdJPowPLU)
-- **Thumbnail image:** (./images/thumbnail.jpeg)
+- **Thumbnail image:** ![Demo thumbnail](./images/thumbnail.jpeg)
 
 ---
 ## Use of GenAI Tools
