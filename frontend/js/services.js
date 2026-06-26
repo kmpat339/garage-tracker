@@ -570,7 +570,7 @@ async function MyFrontEnd() {
       fetchSummary("by-vehicle"),
       fetchSummary("monthly"),
       fetchSummary("due-soon"),
-    ]);
+    ]); //Nice use of Promise.all()!
     // Keep the by-vehicle rows so the sort buttons can re-order them later.
     byVehicleRows = byVehicle;
     // Start (and restart, after a CRUD reload) on the default sort: by nickname.
