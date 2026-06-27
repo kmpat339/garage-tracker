@@ -669,7 +669,7 @@ async function MyFrontEnd() {
 
     // Same column again -> flip direction; new column -> start ascending.
     if (serviceSortKey === key) {
-      serviceSortDir = serviceSortDir === "asc" ? "desc" : "asc";
+      serviceSortDir = serviceSortDir === "asc" ? "desc" : "asc"; //Suggestion: why not use a boolean here?
     } else {
       serviceSortKey = key;
       serviceSortDir = "asc";
