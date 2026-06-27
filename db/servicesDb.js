@@ -19,6 +19,12 @@ import { MongoClient } from "mongodb";
 // so it's fine to keep here as a default (both teammates use "garage").
 const DEFAULT_DB_NAME = "garage";
 
+/**
+ * Would recommend refactoring database connection into a singleton pattern that the modules collections can use.
+ * Would help improve scalability and improve backend as every CRUD operation would be handled
+ * through one MongoDB client instance per client, instead of multiple instances for every client.
+ */
+
 function createServicesDb() {
   // Open a fresh connection and hand back the client (so we can close it),
   // the "services" collection, and the raw db handle (so a method can reach

@@ -9,6 +9,12 @@ import { MongoClient } from "mongodb";
 // Both teammates share the garage database.
 const DEFAULT_DB_NAME = "garage";
 
+/**
+ * Would recommend refactoring database connection into a singleton pattern that the modules collections can use.
+ * Would help improve scalability and improve backend as every CRUD operation would be handled
+ * through one MongoDB client instance per client, instead of multiple instances for every client.
+ */
+
 function createVehiclesDb() {
   // Open a fresh connection; the caller closes the client when done.
   // Connection string comes from .env via --env-file.
