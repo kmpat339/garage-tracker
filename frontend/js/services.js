@@ -103,6 +103,12 @@ async function MyFrontEnd() {
 
   // Fill the service table. nameById maps vehicleId -> nickname.
   // We use ?? (not ||) for "missing" so a real 0 (e.g. mileage 0) still shows.
+
+  /**
+   * Example JSdoc
+   * @param {*} services add param description here
+   * @param {*} nameById 
+   */
   function displayServices(services, nameById) {
     const tbody = document.getElementById("services-tbody");
     tbody.innerHTML = "";
