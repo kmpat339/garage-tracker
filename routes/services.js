@@ -15,6 +15,20 @@ function toObjectId(idString) {
   return new ObjectId(idString);
 }
 
+/*=============================================
+=           Helper Functions           =
+
+// Middleware for the routes that take an :id in the URL.
+// It runs BEFORE the route handler: it converts the id once and, if the id is
+// bad, responds 400 and stops (by not calling next()). Otherwise it stashes the
+// converted id on req.objectId and calls next() to continue to the route.
+/*
+ * I like the use of this middleware function to initialze an ObjectId, 
+ * but I believe this should be the responsibility of the module that interacts with the MongoClient.
+ * If you keep it as middleware, it should be in its own separate file and imported into both services.js and vehicles.js
+ * to maximize physical code reuse instead of redefining it in both files. Same goes with reused helper functions.
+*/
+function requireValidId(req, res, next) { 
 // Converts and validates the :id param before the route handler runs.
 function requireValidId(req, res, next) {
   const id = toObjectId(req.params.id);

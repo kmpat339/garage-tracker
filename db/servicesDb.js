@@ -5,6 +5,12 @@ import { MongoClient } from "mongodb";
 
 const DEFAULT_DB_NAME = "garage";
 
+/**
+ * Would recommend refactoring database connection into a singleton pattern that the modules collections can use.
+ * Would help improve scalability and improve backend as every CRUD operation would be handled
+ * through one MongoDB client instance per client, instead of multiple instances for every client.
+ */
+
 function createServicesDb() {
   // Each method opens and closes its own connection. A real app would share
   // one connection at startup; we trade a little efficiency for simplicity.
@@ -177,3 +183,8 @@ function createServicesDb() {
 }
 
 export default createServicesDb();
+/*
+ * If you want to make this a valid singleton pattern,
+ * would explicitly enforce that the object you are returning 
+ * doesn't already exist and if it does, return that instance. 
+*/

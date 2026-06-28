@@ -77,6 +77,11 @@ async function MyFrontEnd() {
     console.log("Filled vehicle datalist with", vehicles.length, "options");
   }
 
+  /**
+   * Example JSdoc
+   * @param {*} services add param description here
+   * @param {*} nameById 
+   */
   // Fill the service table. Use ?? not || so a real 0 (e.g. mileage) still shows.
   function displayServices(services, nameById) {
     const tbody = document.getElementById("services-tbody");
@@ -487,6 +492,8 @@ async function MyFrontEnd() {
       fetchSummary("by-vehicle"),
       fetchSummary("monthly"),
       fetchSummary("due-soon"),
+    ]); //Nice use of Promise.all()!
+    // Keep the by-vehicle rows so the sort buttons can re-order them later.
     ]);
 
     byVehicleRows = byVehicle;
@@ -563,7 +570,7 @@ async function MyFrontEnd() {
     }
 
     if (serviceSortKey === key) {
-      serviceSortDir = serviceSortDir === "asc" ? "desc" : "asc";
+      serviceSortDir = serviceSortDir === "asc" ? "desc" : "asc"; //Suggestion: why not use a boolean here?
     } else {
       serviceSortKey = key;
       serviceSortDir = "asc";
