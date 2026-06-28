@@ -7,34 +7,27 @@ h2 {
   text-align: center;
 }
 
-/* Scrollable table box: cap the height so rows scroll up/down inside the box
-   instead of making the page very long. Shared by the service list and the
-   three summary tables. (overflow-x already comes from .table-responsive for
-   the sideways scroll on narrow screens.) */
+/* Scrollable table box: cap the height so rows scroll inside the box. */
 .scroll-table {
   max-height: 400px;
   overflow-y: auto;
 }
 
-/* Shorter variant for the summary tables (they're secondary reports). */
+/* Shorter variant for the secondary summary tables. */
 .scroll-table-short {
   max-height: 250px;
 }
 
-/* Keep the column headers visible while the rows scroll. position: sticky pins
-   the header row to the top of the scroll box; the border is drawn on the th
-   itself (table borders otherwise scroll away with the rows, leaving a broken
-   line). The white background keeps scrolling rows from bleeding through. */
+/* Pin the header row while the body scrolls; border on the th so it doesn't
+   scroll away, white background so rows don't bleed through. */
 .scroll-table thead th {
   position: sticky;
   top: 0;
   background-color: #fff;
-  border-bottom: 2px solid #dee2e6; /* Bootstrap's table border color */
+  border-bottom: 2px solid #dee2e6;
 }
 
-/* Our own form-validation style (we deliberately don't use Bootstrap's
-   is-invalid). JS adds .field-error to an input/select that failed the
-   front-end check, and removes it once the field is fixed. */
+/* Form-validation outlines; JS toggles these classes per field. */
 .field-error {
   border: 1px solid red;
 }
@@ -43,24 +36,18 @@ h2 {
   border: 1px solid green;
 }
 
-/* Edit-mode accent. JS adds .editing to the form's <section> when the Edit
-   button on a row is clicked, so it's obvious at a glance that you're changing
-   an existing service (not adding a new one). resetForm removes it. */
+/* Edit-mode accent; JS adds .editing to the form section while editing a row. */
 #service-form-section.editing {
-  border: 2px solid #ffc107; /* amber "caution: editing" border */
-  background-color: #fff9e6; /* faint matching tint */
+  border: 2px solid #ffc107;
+  background-color: #fff9e6;
 }
 
-/* Active sort button for Spend by Vehicle. JS adds .sort-active to whichever
-   of the three sort buttons is currently applied, and removes it from the
-   others, so it's clear which sort is in effect. */
+/* Active Spend-by-Vehicle sort button; JS adds .sort-active to the current one. */
 .sort-active {
-  border: 5px solid blue; /* blue border marks the active sort */
+  border: 5px solid blue;
 }
 
-/* Service-list column headers that can be clicked to sort. The pointer cursor
-   signals they're clickable; the arrow span just gets a little breathing room
-   from the label. JS fills .sort-arrow with ▼ or ▲ for the active column. */
+/* Clickable sort headers; JS fills .sort-arrow with ▲/▼ for the active column. */
 .sortable {
   cursor: pointer;
 }
@@ -69,22 +56,17 @@ h2 {
   margin-left: 4px;
 }
 
-/* Due-Soon "Miles Left" cell coloring by status. JS adds one of these classes
-   to the Miles Left cell: overdue (negative) red, due soon (0-1000) orange,
-   ok (>1000) green. font-weight makes the state pop a bit more.
-   Scoped under #due-soon-tbody td so these beat Bootstrap's .table-striped cell
-   color (which sets --bs-table-color at a higher specificity than a bare
-   single class — without this scoping the colors never show). */
+/* Due-Soon Miles Left coloring by status. */
 #due-soon-tbody td.status-overdue {
-  color: #dc3545; /* Bootstrap red */
+  color: #dc3545;
   font-weight: bold;
 }
 
 #due-soon-tbody td.status-due-soon {
-  color: #fd7e14; /* Bootstrap orange */
+  color: #fd7e14;
   font-weight: bold;
 }
 
 #due-soon-tbody td.status-ok {
-  color: #198754; /* Bootstrap green */
+  color: #198754;
 }

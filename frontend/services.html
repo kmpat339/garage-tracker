@@ -4,35 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Garage Tracker</title>
-
-    <!-- Bootstrap (CDN). We are ONLY using its grid (container/row/col-*) for
-         now. No other Bootstrap styling is applied; the rest of the page is
-         plain semantic HTML so we can style it ourselves later. -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-
-    <!-- Our own (currently empty) stylesheet, loaded after Bootstrap. -->
     <link rel="stylesheet" href="css/services.css" />
-
-    <!-- Our page logic. Empty for now; deferred so it runs after parsing. -->
     <script src="js/services.js" defer></script>
   </head>
 
   <body>
     <header>
-      <!-- Bootstrap navbar: a top bar with the site name (brand) on the left
-           and page links on the right. No collapse/hamburger, so it needs no
-           JavaScript; the links just stay visible. -->
       <nav class="navbar navbar-expand navbar-dark bg-dark">
         <div class="container">
-          <!-- The "brand" = site name, links to this (Services) page. -->
           <a class="navbar-brand" href="index.html">Garage Tracker</a>
-
-          <!-- The list of links. ms-auto pushes them to the right edge. -->
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
@@ -54,25 +40,16 @@
     </header>
 
     <main class="container mt-4 mb-4">
-      <!-- Two columns: main content (left) + add/edit form sidebar (right). -->
       <div class="row">
-        <!-- ===================== LEFT COLUMN ===================== -->
+        <!-- left: service list + summary reports -->
         <div class="col-md-8">
-          <!-- Service list, with its filters above the table. -->
           <section class="border rounded p-3 mb-4">
             <h1>Service Records</h1>
-
-            <!-- Filters act on the list below (wired up later in JS). -->
             <p>Filter the service records by vehicle, type, or date range.</p>
-            <!-- row g-2 = small gaps between fields; columns wrap to the next
-                 line when they exceed the 12-unit grid. Each field is col-md-4
-                 (3 per line on medium+ screens, so the 6 controls wrap to two
-                 rows of 3); on small screens col-md-* stacks them full-width. -->
             <form id="filter-form" class="row g-2 mb-4 align-items-end">
               <div class="col-md-4">
                 <label for="filter-vehicle" class="form-label">Vehicle</label>
-                <!-- Type-to-search: the <datalist> suggestions (nicknames) are
-                     filled by JS. JS maps the typed nickname back to its _id. -->
+                <!-- datalist filled by JS; typed nickname maps to _id on submit -->
                 <input
                   id="filter-vehicle"
                   class="form-control"
@@ -96,8 +73,6 @@
               </div>
 
               <div class="col-md-4">
-                <!-- Cost range filter (either end optional). Applied on the
-                     backend via the query string, like the other filters. -->
                 <label for="filter-cost-min" class="form-label">Min cost</label>
                 <input
                   id="filter-cost-min"
@@ -134,26 +109,16 @@
               </div>
             </form>
 
-            <!-- Shown by JS if the typed vehicle nickname doesn't exist. -->
             <p id="filter-error" class="text-danger"></p>
 
-            <!-- Hints: headers sort the list; scroll right for the actions. -->
             <p class="text-muted small mb-1">
               Click a column header to sort (click again to reverse). Scroll
               right in the table to reach the Edit/Delete actions.
             </p>
 
-            <!-- Rows go in <tbody> via JS later. table-responsive scrolls
-                 sideways on narrow screens; our scroll-table class also caps
-                 the height so the rows scroll up/down (header stays pinned). -->
             <div class="table-responsive scroll-table">
               <table class="table table-striped">
                 <thead>
-                  <!-- Every data column is sortable: its data-sort key tells the
-                       JS which field to sort by (SERVICE_SORTS maps it to the
-                       field + type). The <span> holds the ▲/▼ arrow JS adds for
-                       the active column. .sortable styles them as clickable.
-                       "Actions" has no key, so it isn't sortable. -->
                   <tr>
                     <th class="sortable" data-sort="vehicle">
                       Vehicle <span class="sort-arrow"></span>
@@ -180,7 +145,6 @@
                   </tr>
                 </thead>
                 <tbody id="services-tbody">
-                  <!-- service rows rendered here later -->
                   <tr>
                     <td>No services found.</td>
                     <td></td>
@@ -196,15 +160,11 @@
             </div>
           </section>
 
-          <!-- All three reports are one logical group: one section, one h2,
-               and an h3 per report. -->
           <section class="border rounded p-3 mb-4 summary-reports">
             <h2>Summary Reports</h2>
 
-            <!-- Report: total spend per vehicle. -->
             <div class="border rounded p-3 mb-4">
               <h3>Spend by Vehicle</h3>
-              <!-- Sort buttons (wired in JS later). -->
               <div class="mt-3 mb-3">
                 <span class="me-2">Sort by:</span>
                 <button
@@ -238,25 +198,20 @@
                       <th># Services</th>
                     </tr>
                   </thead>
-                  <tbody id="by-vehicle-tbody">
-                    <!-- rows rendered here later -->
-                  </tbody>
+                  <tbody id="by-vehicle-tbody"></tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Report: total spend per month, for a chosen year. -->
             <div class="border rounded p-3 mb-4">
               <h3>Spend by Month</h3>
-              <!-- Year dropdown. Options are filled by JS from the data
-                   (the years present in the YYYY-MM keys). -->
               <div class="mt-3 mb-3">
                 <label for="monthly-year" class="form-label me-2">Year</label>
                 <select
                   id="monthly-year"
                   class="form-select d-inline-block w-auto"
                 >
-                  <!-- <option> years added in JS -->
+                  <!-- options added by JS -->
                 </select>
               </div>
               <div class="table-responsive scroll-table scroll-table-short">
@@ -268,20 +223,13 @@
                       <th># Services</th>
                     </tr>
                   </thead>
-                  <tbody id="monthly-tbody">
-                    <!-- rows rendered here later -->
-                  </tbody>
+                  <tbody id="monthly-tbody"></tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Report: vehicles due for service soon, filtered by status. -->
             <div class="border rounded p-3">
               <h3>Due Soon</h3>
-              <!-- Controls: a Status filter (computed in JS from milesLeft:
-                   <0 overdue, 0–1000 due soon, >1000 ok) and a Miles Left sort
-                   button that toggles ascending/descending. They compose:
-                   filter to a status, then sort within it. -->
               <div class="mt-3 mb-3">
                 <label for="due-status" class="form-label me-2">Status</label>
                 <select
@@ -313,26 +261,20 @@
                       <th>Miles Left</th>
                     </tr>
                   </thead>
-                  <tbody id="due-soon-tbody">
-                    <!-- rows rendered here later -->
-                  </tbody>
+                  <tbody id="due-soon-tbody"></tbody>
                 </table>
               </div>
             </div>
           </section>
         </div>
 
-        <!-- ===================== RIGHT COLUMN (sidebar) ===================== -->
+        <!-- right: add/edit sidebar — one form handles both POST and PUT -->
         <div class="col-md-4">
-          <!-- Add/Edit form. One form does both: empty = add (POST); clicking
-               Edit on a row fills it and switches to update (PUT). Wired in JS. -->
           <section id="service-form-section" class="border rounded p-3">
-            <!-- Heading text is swapped by JS: "Add a Service" <-> "Edit Service". -->
             <h2 id="form-heading">Add a Service</h2>
             <form id="service-form">
               <div class="mb-3">
                 <label for="form-vehicle" class="form-label">Vehicle</label>
-                <!-- Type-to-search; shares the same #vehicle-options datalist. -->
                 <input
                   id="form-vehicle"
                   class="form-control"
@@ -341,8 +283,7 @@
                 />
               </div>
 
-              <!-- Shared suggestion list for both vehicle inputs above; JS fills
-                   it with one <option value="nickname"> per vehicle. -->
+              <!-- shared datalist for both vehicle inputs; JS fills it -->
               <datalist id="vehicle-options"></datalist>
 
               <div class="mb-3">
@@ -352,9 +293,6 @@
 
               <div class="mb-3">
                 <label for="form-type" class="form-label">Service Type</label>
-                <!-- Fixed list of service types. If "other" is picked, the
-                     Additional Notes field becomes required (enforced in JS +
-                     backend) so the user explains what the service was. -->
                 <select id="form-type" class="form-select">
                   <option value="">Select a type…</option>
                   <option value="oil change">Oil change</option>
@@ -416,12 +354,10 @@
                 ></textarea>
               </div>
 
-              <!-- Save text is swapped by JS: "Save" (add) <-> "Update" (edit). -->
               <button type="submit" id="form-submit" class="btn btn-primary">
                 Save
               </button>
-              <!-- Only shown in edit mode (JS removes d-none); clears the form
-                   and returns to add mode. type="button" so it doesn't submit. -->
+              <!-- hidden in add mode; JS reveals it in edit mode -->
               <button
                 type="button"
                 id="form-cancel"
@@ -430,9 +366,6 @@
                 Cancel
               </button>
 
-              <!-- One shared error line for the form: shows the front-end gate's
-                   message (e.g. a missing field) or the error the backend sends
-                   back on a 400. Cleared on a successful save. -->
               <p id="form-error" class="text-danger mt-2"></p>
             </form>
           </section>
