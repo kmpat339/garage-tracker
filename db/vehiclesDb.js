@@ -95,4 +95,9 @@ function createVehiclesDb() {
 }
 
 // one shared instance, same as the services db
-export default createVehiclesDb();
+export default createVehiclesDb(); 
+/*
+ * If you want to make this a valid singleton pattern,
+ * would explicitly enforce that the object you are returning 
+ * doesn't already exist and if it does, return that instance. 
+*/

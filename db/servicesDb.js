@@ -237,3 +237,8 @@ function createServicesDb() {
 
 // Export ONE shared instance so the whole app uses the same db object.
 export default createServicesDb();
+/*
+ * If you want to make this a valid singleton pattern,
+ * would explicitly enforce that the object you are returning 
+ * doesn't already exist and if it does, return that instance. 
+*/
