@@ -1,6 +1,22 @@
+
+/* I liked the commenting of the CSS files. */
+/* You could consider using the :root{} function to create consistent color variables throughout */
+/* I made this suggestion here but could apply to all the CSS files. */
+
+:root {
+  --primary-color:    #007bff;
+  --secondary-color:  #6c757d;
+  --success-color:    #28a745;
+  --danger-color:     #dc3545;
+  --warning-color:    #ffc107;
+  --info-color:       #17a2b8;
+  --light-color:      #f8f9fa;
+  --dark-color:       #343a40;
+}
+
 body {
   font-family: Arial, sans-serif;
-  background-color: beige;
+  background-color: var(--light-color);
 }
 
 h2 {
@@ -23,28 +39,28 @@ h2 {
 .scroll-table thead th {
   position: sticky;
   top: 0;
-  background-color: #fff;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--light-color);
+  border-bottom: 2px solid var(--dark-color);
 }
 
 /* Form-validation outlines; JS toggles these classes per field. */
 .field-error {
-  border: 1px solid red;
+  border: 1px solid var(--danger-color);
 }
 
 .field-success {
-  border: 1px solid green;
+  border: 1px solid var(--success-color);
 }
 
 /* Edit-mode accent; JS adds .editing to the form section while editing a row. */
 #service-form-section.editing {
-  border: 2px solid #ffc107;
-  background-color: #fff9e6;
+  border: 2px solid var(--warning-color);
+  background-color: var(--light-color);
 }
 
 /* Active Spend-by-Vehicle sort button; JS adds .sort-active to the current one. */
 .sort-active {
-  border: 5px solid blue;
+  border: 5px solid var(--primary-color);
 }
 
 /* Clickable sort headers; JS fills .sort-arrow with ▲/▼ for the active column. */
@@ -58,15 +74,15 @@ h2 {
 
 /* Due-Soon Miles Left coloring by status. */
 #due-soon-tbody td.status-overdue {
-  color: #dc3545;
+  color: var(--danger-color);
   font-weight: bold;
 }
 
 #due-soon-tbody td.status-due-soon {
-  color: #fd7e14;
+  color: var(--warning-color);
   font-weight: bold;
 }
 
 #due-soon-tbody td.status-ok {
-  color: #198754;
+  color: var(--success-color);
 }
